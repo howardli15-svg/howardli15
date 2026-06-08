@@ -9,43 +9,29 @@
     
     <style>
       body { margin: 0; overflow: hidden; }
-      
-      /* 新增：開始按鈕嘅樣式 */
       #start-overlay {
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        font-family: sans-serif;
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.85); color: white;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 9999; font-family: sans-serif;
       }
       #start-button {
-        padding: 12px 24px;
-        font-size: 18px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        padding: 15px 30px; font-size: 18px; background-color: #007bff;
+        color: white; border: none; border-radius: 25px; cursor: pointer;
       }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">準備進入 AR 體驗</p>
+      <p style="margin-bottom: 20px; font-size: 16px;">AR 系統已準備就緒</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline crossorigin="anonymous"></video>
+        <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -61,32 +47,27 @@
       const startButton = document.querySelector('#start-button');
       const videoElement = document.querySelector('#ar-video');
       const targetEntity = document.querySelector('[mindar-image-target]');
-      
-      let isUnlocked = false;
 
-      // 當使用者點擊「開始」按鈕
+      // 一點擊按鈕，立刻啟動播放，拿到最高權限
       startButton.addEventListener('click', () => {
-        // 預先輕輕播一吓再暫停，用嚟呃過手機瀏覽器，解鎖播放權限
         videoElement.play().then(() => {
-          videoElement.pause();
-          isUnlocked = true;
-          startOverlay.style.display = 'none'; // 隱藏按鈕遮罩
+          startOverlay.style.style.display = 'none';
         }).catch((err) => {
-          console.error("解鎖影片失敗:", err);
-          startOverlay.style.display = 'none';
+          console.log("播放啟動", err);
+          // 萬一失敗也強制關閉遮罩
+          startOverlay.style.display = 'none'; 
         });
       });
 
       // 監聽辨識狀態
       targetEntity.addEventListener("targetFound", () => {
         console.log("搵到相片！");
-        // 確保已經點擊解鎖咗先播
-        videoElement.play().catch(e => console.log("播放被阻擋:", e));
+        // 唔再 call play()，直接將時間回彈去 0 秒，等觀眾由頭睇起
+        videoElement.currentTime = 0;
       });
 
       targetEntity.addEventListener("targetLost", () => {
         console.log("移開鏡頭");
-        videoElement.pause();
       });
     </script>
   </body>
