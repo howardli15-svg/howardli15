@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的免費無水印 WebAR (正式運作版)</title>
+    <title>我的完美 WebAR</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -16,29 +16,29 @@
         z-index: 9999; font-family: sans-serif;
       }
       #start-button {
-        padding: 15px 30px; font-size: 18px; background-color: #28a745;
+        padding: 15px 35px; font-size: 18px; background-color: #28a745;
         color: white; border: none; border-radius: 25px; cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold; letter-spacing: 1px;
       }
-      #ar-video { display: none; }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">AR 體驗已就緒</p>
+      <p style="margin-bottom: 20px; font-size: 16px;">AR 體驗已就緒</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
-    <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
-    <canvas id="ar-canvas" width="720" height="1280" style="display:none;"></canvas>
-
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
+      <a-assets>
+        <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+      </a-assets>
+
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity geometry="primitive: plane; width: 1; height: 1.777" material="src: #ar-canvas; shader: flat"></a-entity>
+        <a-video src="#ar-video" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
       
     </a-scene>
@@ -47,37 +47,28 @@
       const startOverlay = document.querySelector('#start-overlay');
       const startButton = document.querySelector('#start-button');
       const video = document.querySelector('#ar-video');
-      const canvas = document.querySelector('#ar-canvas');
-      const ctx = canvas.getContext('2d');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
-      // 點擊開始
+      // 點擊開始，先默默啟動影片取得手機瀏覽器最高授權
       startButton.addEventListener('click', () => {
         video.play().then(() => {
-          requestAnimationFrame(renderCanvas);
           startOverlay.style.display = 'none';
         }).catch((err) => {
-          console.error("啟動失敗:", err);
+          console.error("授權失敗:", err);
           startOverlay.style.display = 'none';
         });
       });
 
-      // 每影手動畫圖到 Canvas
-      function renderCanvas() {
-        if (video.readyState >= video.HAVE_CURRENT_DATA) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        }
-        requestAnimationFrame(renderCanvas);
-      }
-
-      // 監聽辨識
+      // 監聽辨識狀態：雙重保險播放機制
       targetEntity.addEventListener("targetFound", () => {
-        console.log("辨識成功，本地影片開始無縫渲染！");
-        video.currentTime = 0; 
+        console.log("辨識成功！");
+        video.currentTime = 0; // 由第 0 秒開始播
+        video.play().catch(e => console.log("播放失敗:", e)); // 強制再 play 多次，確保行得走得
       });
 
       targetEntity.addEventListener("targetLost", () => {
         console.log("移開鏡頭");
+        video.pause(); // 移開鏡頭就暫停，慳電
       });
     </script>
   </body>
