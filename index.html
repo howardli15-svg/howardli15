@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>5套型號 (單引擎突破極限版)</title>
+    <title>5套型號 (單引擎終極破閘版)</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
@@ -60,7 +60,7 @@
       const targets = document.querySelectorAll('[mindar-image-target]');
       const planes = document.querySelectorAll('.ar-plane');
 
-      // 影片資料庫：記錄每張相要播邊段片、有無聲
+      // 影片資料庫
       const videoConfig = [
         { src: './video0.mp4', needsSound: false },
         { src: './video1.mp4', needsSound: false },
@@ -69,37 +69,36 @@
         { src: './video4.mp4', needsSound: true }
       ];
 
-      // 點擊綠色掣，拎到手機最高播放權限
+      // 點擊綠色掣，一鍵解鎖單一引擎
       startButton.addEventListener('click', () => {
         startOverlay.style.display = 'none';
         video.src = videoConfig[0].src; 
         video.muted = true;
-        video.play().then(() => { video.pause(); }).catch(e => console.log(e));
+        video.play().then(() => { video.pause(); }).catch(e => console.log("授權:", e));
       });
 
-      // 智能換帶系統
+      // 掃到邊張相，就瞬間換帶
       targets.forEach((target, index) => {
         target.addEventListener('targetFound', () => {
           video.pause();
           
-          // 先將所有畫布洗乾淨，防止殘影
+          // 洗走其他畫布嘅殘影
           planes.forEach(p => p.removeAttribute('material'));
 
-          // 瞬間換上專屬嘅影片同設定
+          // 換上專屬影片同設定
           video.src = videoConfig[index].src;
           video.muted = !videoConfig[index].needsSound;
           video.load();
 
-          // 將影片畫面黐落去依家掃到嗰張相嘅畫布度
+          // 將畫面黐上對應嘅畫布
           planes[index].setAttribute('material', 'src: #main-video; shader: flat; transparent: true');
 
           video.currentTime = 0;
-          video.play().catch(e => console.log(e));
+          video.play().catch(e => console.log("播放:", e));
         });
 
         target.addEventListener('targetLost', () => {
           video.pause();
-          // 移開相機，即刻搣走張畫布
           planes[index].removeAttribute('material');
         });
       });
