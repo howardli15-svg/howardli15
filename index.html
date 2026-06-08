@@ -2,28 +2,47 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>5套型號 (完美大結局版)</title>
+    <title>Hyson 的 AR 展覽館</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
+      
+      /* 🌟 背景設計：深藍色漸變 */
       #start-overlay {
         position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.9); color: white;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        z-index: 9999; font-family: sans-serif;
+        z-index: 9999; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       }
+      
+      /* 🌟 按鈕設計 */
       #start-button {
-        padding: 15px 35px; font-size: 18px; background-color: #28a745;
-        color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;
+        padding: 18px 45px; font-size: 20px; 
+        background-color: #f1c40f; /* 金黃色按鈕 */
+        color: #2c3e50; border: none; border-radius: 50px; cursor: pointer; 
+        font-weight: bold; letter-spacing: 2px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        transition: transform 0.2s;
+      }
+      #start-button:active { transform: scale(0.95); }
+      
+      /* 標題設計 */
+      .title-text {
+        margin-bottom: 40px; font-size: 28px; font-weight: bold; 
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-align: center;
       }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">AR 展覽館準備就緒</p>
-      <button id="start-button">點擊這裡開始</button>
+      <div class="title-text">
+        Hyson 的成長時刻<br>AR 互動展覽館
+      </div>
+      <button id="start-button">進入體驗</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -43,12 +62,11 @@
     <script>
       const startOverlay = document.querySelector('#start-overlay');
       const startButton = document.querySelector('#start-button');
-      
       const video = document.querySelector('#main-video');
       const targets = document.querySelectorAll('[mindar-image-target]');
       const planes = document.querySelectorAll('.ar-plane');
 
-      // 🚨 已經將圖 3 同圖 4 正式駁返去 ./video3.mp4 同 ./video4.mp4！
+      // 影片配置 (記得確保順序對應)
       const videoConfig = [
         { src: './video0.mp4', needsSound: false },
         { src: './video1.mp4', needsSound: false },
@@ -68,16 +86,13 @@
         target.addEventListener('targetFound', () => {
           video.pause();
           planes.forEach(p => p.removeAttribute('material'));
-          
           video.src = videoConfig[index].src;
           video.muted = !videoConfig[index].needsSound;
           video.load();
           planes[index].setAttribute('material', 'src: #main-video; shader: flat; transparent: true');
-          
           video.currentTime = 0;
           video.play().catch(e => console.log(e));
         });
-
         target.addEventListener('targetLost', () => {
           video.pause();
           planes[index].removeAttribute('material');
