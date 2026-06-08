@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>5套型號 (單引擎終極破閘版)</title>
+    <title>安心瞓覺驗證版</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
@@ -22,34 +22,22 @@
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">單引擎 AR 系統準備就緒</p>
+      <p style="margin-bottom: 20px; font-size: 16px;">安心驗證版已就緒</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-      
       <a-assets>
         <video id="main-video" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity>
-      </a-entity>
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity>
-      </a-entity>
-      <a-entity mindar-image-target="targetIndex: 2">
-        <a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity>
-      </a-entity>
-      <a-entity mindar-image-target="targetIndex: 3">
-        <a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity>
-      </a-entity>
-      <a-entity mindar-image-target="targetIndex: 4">
-        <a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity>
-      </a-entity>
-      
+      <a-entity mindar-image-target="targetIndex: 0"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+      <a-entity mindar-image-target="targetIndex: 1"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+      <a-entity mindar-image-target="targetIndex: 2"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+      <a-entity mindar-image-target="targetIndex: 3"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+      <a-entity mindar-image-target="targetIndex: 4"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
     </a-scene>
 
     <script>
@@ -60,41 +48,35 @@
       const targets = document.querySelectorAll('[mindar-image-target]');
       const planes = document.querySelectorAll('.ar-plane');
 
-      // 影片資料庫
+      // 【真相大白測試區】
       const videoConfig = [
         { src: './video0.mp4', needsSound: false },
         { src: './video1.mp4', needsSound: false },
         { src: './video2.mp4', needsSound: true },
-        { src: './video3.mp4', needsSound: true },
-        { src: './video4.mp4', needsSound: true }
+        // 🚨 留意呢度！我強制圖3同圖4去播無問題嘅片
+        { src: './video0.mp4', needsSound: false }, // 圖 3 借播 video 0
+        { src: './video1.mp4', needsSound: false }  // 圖 4 借播 video 1
       ];
 
-      // 點擊綠色掣，一鍵解鎖單一引擎
       startButton.addEventListener('click', () => {
         startOverlay.style.display = 'none';
         video.src = videoConfig[0].src; 
         video.muted = true;
-        video.play().then(() => { video.pause(); }).catch(e => console.log("授權:", e));
+        video.play().then(() => { video.pause(); }).catch(e => console.log(e));
       });
 
-      // 掃到邊張相，就瞬間換帶
       targets.forEach((target, index) => {
         target.addEventListener('targetFound', () => {
           video.pause();
-          
-          // 洗走其他畫布嘅殘影
           planes.forEach(p => p.removeAttribute('material'));
-
-          // 換上專屬影片同設定
+          
           video.src = videoConfig[index].src;
           video.muted = !videoConfig[index].needsSound;
           video.load();
-
-          // 將畫面黐上對應嘅畫布
           planes[index].setAttribute('material', 'src: #main-video; shader: flat; transparent: true');
-
+          
           video.currentTime = 0;
-          video.play().catch(e => console.log("播放:", e));
+          video.play().catch(e => console.log(e));
         });
 
         target.addEventListener('targetLost', () => {
