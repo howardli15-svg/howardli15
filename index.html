@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的免費 5 套混合型 WebAR 系統</title>
+    <title>我的免費 5 套混合型 WebAR 系統 (防卡死安全版)</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -57,3 +57,62 @@
       <a-entity mindar-image-target="targetIndex: 3" id="target3">
         <a-video src="#video3" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 4" id="target4">
+        <a-video src="#video4" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+      const startOverlay = document.querySelector('#start-overlay');
+      const startButton = document.querySelector('#start-button');
+
+      // 點擊綠色掣
+      startButton.addEventListener('click', () => {
+        // 1. 無論如何，先關閉遮罩，確保使用者體驗流暢
+        startOverlay.style.display = 'none';
+
+        // 2. 安全解鎖法：逐個影片嘗試啟動，就算少咗檔案都唔會崩潰
+        const videos = [
+          document.querySelector('#video0'),
+          document.querySelector('#video1'),
+          document.querySelector('#video2'),
+          document.querySelector('#video3'),
+          document.querySelector('#video4')
+        ];
+
+        videos.forEach((v) => {
+          if (v) {
+            v.play().then(() => {
+              v.pause(); // 順利激活後先暫停，等掃到圖先播
+            }).catch((err) => {
+              console.log("此影片暫時未能預先解鎖（可能檔案未傳好），但不影響其他功能:", err);
+            });
+          }
+        });
+      });
+
+      // 智能監聽分流系統
+      setupTarget(document.querySelector('#target0'), document.querySelector('#video0'));
+      setupTarget(document.querySelector('#target1'), document.querySelector('#video1'));
+      setupTarget(document.querySelector('#target2'), document.querySelector('#video2'));
+      setupTarget(document.querySelector('#target3'), document.querySelector('#video3'));
+      setupTarget(document.querySelector('#target4'), document.querySelector('#video4'));
+
+      function setupTarget(targetEl, videoEl) {
+        if (!targetEl || !videoEl) return;
+
+        targetEl.addEventListener("targetFound", () => {
+          console.log("辨識成功");
+          videoEl.currentTime = 0;
+          videoEl.play().catch(e => console.log("播放被瀏覽器阻擋:", e));
+        });
+
+        targetEl.addEventListener("targetLost", () => {
+          videoEl.pause();
+        });
+      }
+    </script>
+  </body>
+</html>
