@@ -1,87 +1,93 @@
-冇問題，直接同你寫好晒個完整網頁版 AR（WebAR）嘅 HTML 模板。
-
-呢度用咗現時最流行、最穩定嘅開源框架 Mind-AR。你完全唔需要安裝任何嘢，只需要複製下面段 Code，跟住我後面嘅 3 個簡單步驟，就可以做到完全免費、無水印、無次數限制嘅掃圖播片效果！
-
-完整網頁原始碼（index.html）
-新建一個純文字檔案，命名為 index.html，然後將以下代碼全份 Copy 貼入去：
-
-HTML
 <!DOCTYPE html>
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>我的免費無水印 WebAR</title>
     
-    <!-- 引入 A-Frame（3D/AR 渲染引擎） -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <!-- 引入 Mind-AR 擴充元件 -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      /* 載入時嘅 Loading 畫面可以自己用 CSS 執靚佢 */
-      #example-scanning-overlay {
+      body { margin: 0; overflow: hidden; }
+      
+      /* 新增：開始按鈕嘅樣式 */
+      #start-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        position: absolute;
-        left: 0; right: 0; top: 0; bottom: 0;
-        background: transparent;
-        z-index: 2;
+        z-index: 9999;
+        font-family: sans-serif;
+      }
+      #start-button {
+        padding: 12px 24px;
+        font-size: 18px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
       }
     </style>
   </head>
   <body>
 
-    <!-- AR 場景設定：imageTargetSrc 指向你嘅辨識圖數據庫 -->
+    <div id="start-overlay">
+      <p style="margin-bottom: 20px; font-size: 16px;">準備進入 AR 體驗</p>
+      <button id="start-button">點擊這裡開始</button>
+    </div>
+
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <!-- 
-          你準備播放嘅影片。
-          注意：因為手機瀏覽器有限制，影片必須加上 muted (靜音) 同 playsinline 才可以自動播放。
-        -->
-        <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline></video>
+        <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline crossorigin="anonymous"></video>
       </a-assets>
 
-      <!-- 虛擬相機 -->
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- 
-        targetIndex: 0 代表你數據庫入面嘅第一張圖。
-        當相機掃到呢張圖，入面嘅物件就會浮現。
-      -->
       <a-entity mindar-image-target="targetIndex: 0">
-        <!-- 
-          這裡放你要疊加嘅影片。
-          width="1" 代表同你張辨識圖一樣闊。
-          height="0.5625" 係 16:9 影片嘅標準比例（9 除以 16）。如果自訂影片比例可以自行修改。
-        -->
         <a-video src="#ar-video" width="1" height="0.5625" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
       
     </a-scene>
 
     <script>
-      // 監聽辨識狀態：掃到圖就播片，移開鏡頭就暫停
-      const targetEntity = document.querySelector('[mindar-image-target]');
+      const startOverlay = document.querySelector('#start-overlay');
+      const startButton = document.querySelector('#start-button');
       const videoElement = document.querySelector('#ar-video');
+      const targetEntity = document.querySelector('[mindar-image-target]');
+      
+      let isUnlocked = false;
 
+      // 當使用者點擊「開始」按鈕
+      startButton.addEventListener('click', () => {
+        // 預先輕輕播一吓再暫停，用嚟呃過手機瀏覽器，解鎖播放權限
+        videoElement.play().then(() => {
+          videoElement.pause();
+          isUnlocked = true;
+          startOverlay.style.display = 'none'; // 隱藏按鈕遮罩
+        }).catch((err) => {
+          console.error("解鎖影片失敗:", err);
+          startOverlay.style.display = 'none';
+        });
+      });
+
+      // 監聽辨識狀態
       targetEntity.addEventListener("targetFound", () => {
-        console.log("搵到辨識圖！開始播片");
-        videoElement.play();
+        console.log("搵到相片！");
+        // 確保已經點擊解鎖咗先播
+        videoElement.play().catch(e => console.log("播放被阻擋:", e));
       });
 
       targetEntity.addEventListener("targetLost", () => {
-        console.log("移開咗鏡頭，暫停播放");
+        console.log("移開鏡頭");
         videoElement.pause();
       });
-
-      // 解除靜音小技巧：因為網頁預設要靜音，如果想觀眾有聲，可以整一粒掣俾佢哋點擊解鎖聲音
-      // 呢度預設純視覺播放。
     </script>
   </body>
 </html>
