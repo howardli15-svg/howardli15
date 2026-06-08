@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的免費無水印 WebAR</title>
+    <title>我的免費無水印 WebAR (直版專用)</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -11,33 +11,34 @@
       body { margin: 0; overflow: hidden; }
       #start-overlay {
         position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.85); color: white;
+        background: rgba(0, 0, 0, 0.9); color: white;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         z-index: 9999; font-family: sans-serif;
       }
       #start-button {
-        padding: 15px 30px; font-size: 18px; background-color: #007bff;
+        padding: 15px 30px; font-size: 18px; background-color: #28a745;
         color: white; border: none; border-radius: 25px; cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold;
       }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">AR 系統已準備就緒</p>
+      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">【打直拍攝專用 AR 系統】</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
       <a-assets>
-        <video id="ar-video" src="https://www.w3schools.com/html/mov_bbb.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+        <video id="ar-video" src="https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-looking-at-phone-41774-large.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
       </a-assets>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#ar-video" width="1" height="0.5625" position="0 0 0" rotation="0 0 0"></a-video>
+        <a-entity geometry="primitive: plane; width: 1; height: 1.777" material="src: #ar-video; shader: flat"></a-entity>
       </a-entity>
       
     </a-scene>
@@ -48,26 +49,24 @@
       const videoElement = document.querySelector('#ar-video');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
-      // 一點擊按鈕，立刻啟動播放，拿到最高權限
       startButton.addEventListener('click', () => {
         videoElement.play().then(() => {
-          startOverlay.style.style.display = 'none';
+          startOverlay.style.display = 'none';
         }).catch((err) => {
-          console.log("播放啟動", err);
-          // 萬一失敗也強制關閉遮罩
-          startOverlay.style.display = 'none'; 
+          console.error("啟動失敗:", err);
+          startOverlay.style.display = 'none';
         });
       });
 
-      // 監聽辨識狀態
       targetEntity.addEventListener("targetFound", () => {
-        console.log("搵到相片！");
-        // 唔再 call play()，直接將時間回彈去 0 秒，等觀眾由頭睇起
+        console.log("搵到直向相片！");
         videoElement.currentTime = 0;
+        videoElement.play().catch(e => console.log("播放失敗:", e));
       });
 
       targetEntity.addEventListener("targetLost", () => {
         console.log("移開鏡頭");
+        videoElement.pause();
       });
     </script>
   </body>
