@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的免費無水印 WebAR (Canvas終極版)</title>
+    <title>我的免費無水印 WebAR (正式運作版)</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -16,22 +16,21 @@
         z-index: 9999; font-family: sans-serif;
       }
       #start-button {
-        padding: 15px 30px; font-size: 18px; background-color: #f1c40f; /* 換個黃色掣醒目啲 */
-        color: black; border: none; border-radius: 25px; cursor: pointer;
+        padding: 15px 30px; font-size: 18px; background-color: #28a745;
+        color: white; border: none; border-radius: 25px; cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold;
       }
-      /* 把真正嘅影片隱藏起來 */
       #ar-video { display: none; }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">【正在載入 AR 核心技術】</p>
-      <button id="start-button">點擊這裡開始體驗</button>
+      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">AR 體驗已就緒</p>
+      <button id="start-button">點擊這裡開始</button>
     </div>
 
-    <video id="ar-video" src="https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-light-looking-at-phone-41774-large.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+    <video id="ar-video" src="./video.mp4" preload="auto" loop="true" muted="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
     <canvas id="ar-canvas" width="720" height="1280" style="display:none;"></canvas>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
@@ -39,7 +38,7 @@
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
       <a-entity mindar-image-target="targetIndex: 0">
-        <a-entity geometry="primitive: plane; width: 1; height: 1.777" material="src: #ar-canvas; shader: flat; transparent: true"></a-entity>
+        <a-entity geometry="primitive: plane; width: 1; height: 1.777" material="src: #ar-canvas; shader: flat"></a-entity>
       </a-entity>
       
     </a-scene>
@@ -52,10 +51,9 @@
       const ctx = canvas.getContext('2d');
       const targetEntity = document.querySelector('[mindar-image-target]');
 
-      // 一點擊按鈕，解鎖權限並啟動默默播放
+      // 點擊開始
       startButton.addEventListener('click', () => {
         video.play().then(() => {
-          // 啟動手動畫圖循環 (非常重要！)
           requestAnimationFrame(renderCanvas);
           startOverlay.style.display = 'none';
         }).catch((err) => {
@@ -64,20 +62,18 @@
         });
       });
 
-      // 【核心 JavaScript 邏輯】：每一影手動將 video 畫落 canvas 度
+      // 每影手動畫圖到 Canvas
       function renderCanvas() {
         if (video.readyState >= video.HAVE_CURRENT_DATA) {
-          // 將影片畫面按照 Canvas 大小畫上去
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         }
-        // 遞迴調用，無限循環直至網頁關閉
         requestAnimationFrame(renderCanvas);
       }
 
-      // 監聽辨識狀態
+      // 監聽辨識
       targetEntity.addEventListener("targetFound", () => {
-        console.log("搵到相片！Canvas 正在渲染...");
-        video.currentTime = 0; // 辨識到就由頭播放 (呃過手機系統)
+        console.log("辨識成功，本地影片開始無縫渲染！");
+        video.currentTime = 0; 
       });
 
       targetEntity.addEventListener("targetLost", () => {
