@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>安心瞓覺驗證版</title>
+    <title>5套型號 (完美大結局版)</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
@@ -22,7 +22,7 @@
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">安心驗證版已就緒</p>
+      <p style="margin-bottom: 20px; font-size: 16px;">AR 展覽館準備就緒</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
@@ -48,14 +48,13 @@
       const targets = document.querySelectorAll('[mindar-image-target]');
       const planes = document.querySelectorAll('.ar-plane');
 
-      // 【真相大白測試區】
+      // 🚨 已經將圖 3 同圖 4 正式駁返去 ./video3.mp4 同 ./video4.mp4！
       const videoConfig = [
         { src: './video0.mp4', needsSound: false },
         { src: './video1.mp4', needsSound: false },
         { src: './video2.mp4', needsSound: true },
-        // 🚨 留意呢度！我強制圖3同圖4去播無問題嘅片
-        { src: './video0.mp4', needsSound: false }, // 圖 3 借播 video 0
-        { src: './video1.mp4', needsSound: false }  // 圖 4 借播 video 1
+        { src: './video3.mp4', needsSound: true }, 
+        { src: './video4.mp4', needsSound: true }  
       ];
 
       startButton.addEventListener('click', () => {
