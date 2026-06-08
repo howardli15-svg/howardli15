@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>5套型號完美對位版</title>
+    <title>5套型號完全對位版 (2026/06/10)</title>
     
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -25,7 +25,7 @@
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px;">5套 AR 系統 (精準對位版) 已就緒</p>
+      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">5套 AR 精準系統已就緒</p>
       <button id="start-button">點擊這裡開始</button>
     </div>
 
@@ -41,24 +41,24 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" id="target0">
+      <a-entity mindar-image-target="targetIndex: 0">
         <a-video src="#video0" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target1">
-        <a-video src="#video4" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 2" id="target2">
-        <a-video src="#video3" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 3" id="target3">
+      <a-entity mindar-image-target="targetIndex: 1">
         <a-video src="#video1" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 4" id="target4">
+      <a-entity mindar-image-target="targetIndex: 2">
         <a-video src="#video2" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
+      </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 3">
+        <a-video src="#video3" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
+      </a-entity>
+
+      <a-entity mindar-image-target="targetIndex: 4">
+        <a-video src="#video4" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
       </a-entity>
       
     </a-scene>
@@ -70,29 +70,21 @@
       startButton.addEventListener('click', () => {
         startOverlay.style.display = 'none';
 
-        const videos = [
-          document.querySelector('#video0'),
-          document.querySelector('#video1'),
-          document.querySelector('#video2'),
-          document.querySelector('#video3'),
-          document.querySelector('#video4')
-        ];
-
-        videos.forEach((v) => {
-          if (v) {
-            v.play().then(() => { v.pause(); }).catch((err) => { console.log(err); });
-          }
-        });
+        // 解鎖 5 個影片嘅播放 (不論聲音有無)
+        for (let i = 0; i <= 4; i++) {
+          const v = document.querySelector(`#video${i}`);
+          if (v) { v.play().then(() => { v.pause(); }).catch((err) => { console.log(err); }); }
+        }
       });
 
-      // 根據重新校正嘅順序進行 JavaScript 控制線路綁定
-      setupTarget(document.querySelector('#target0'), document.querySelector('#video0'));
-      setupTarget(document.querySelector('#target1'), document.querySelector('#video4')); // Index 1 播 video4
-      setupTarget(document.querySelector('#target2'), document.querySelector('#video3')); // Index 2 播 video3
-      setupTarget(document.querySelector('#target3'), document.querySelector('#video1')); // Index 3 播 video1
-      setupTarget(document.querySelector('#target4'), document.querySelector('#video2')); // Index 4 播 video2
+      // 嚴格嘅 1 對 1 順序控制
+      for (let i = 0; i <= 4; i++) {
+        setupTarget(i, document.querySelector(`#video${i}`));
+      }
 
-      function setupTarget(targetEl, videoEl) {
+      function setupTarget(index, videoEl) {
+        // 使用更精準嘅 A-Frame 監聽選擇器
+        const targetEl = document.querySelectorAll('[mindar-image-target]')[index];
         if (!targetEl || !videoEl) return;
 
         targetEl.addEventListener("targetFound", () => {
