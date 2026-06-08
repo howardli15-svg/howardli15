@@ -2,11 +2,9 @@
 <html lang="zh-Hant">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>5套型號完全對位版 (2026/06/10)</title>
-    
+    <title>系統底牌偵探模式</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    
     <style>
       body { margin: 0; overflow: hidden; }
       #start-overlay {
@@ -17,17 +15,25 @@
       }
       #start-button {
         padding: 15px 35px; font-size: 18px; background-color: #28a745;
-        color: white; border: none; border-radius: 25px; cursor: pointer;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-weight: bold;
+        color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;
+      }
+      /* 偵探專用紅色大字板 */
+      #debug-board {
+        position: absolute; top: 5%; left: 50%; transform: translateX(-50%);
+        background-color: #e74c3c; color: white; font-size: 22px; font-weight: bold;
+        padding: 15px 25px; border-radius: 10px; z-index: 9999; display: none;
+        text-align: center; width: 80%; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       }
     </style>
   </head>
   <body>
 
     <div id="start-overlay">
-      <p style="margin-bottom: 20px; font-size: 16px; letter-spacing: 1px;">5套 AR 精準系統已就緒</p>
-      <button id="start-button">點擊這裡開始</button>
+      <p style="margin-bottom: 20px; font-size: 16px;">偵探模式已就緒</p>
+      <button id="start-button">點擊開始找錯處</button>
     </div>
+
+    <div id="debug-board">等待掃描中...</div>
 
     <a-scene mindar-image="imageTargetSrc: ./targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
       
@@ -41,60 +47,44 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#video0" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-video src="#video1" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 2">
-        <a-video src="#video2" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 3">
-        <a-video src="#video3" width="1" height="1.777" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 4">
-        <a-video src="#video4" width="1" height="0.5625" scale="1.05 1.05 1" position="0 0 0" rotation="0 0 0"></a-video>
-      </a-entity>
+      <a-entity mindar-image-target="targetIndex: 0"><a-video src="#video0" width="1" height="1.777" position="0 0 0"></a-video></a-entity>
+      <a-entity mindar-image-target="targetIndex: 1"><a-video src="#video1" width="1" height="0.5625" position="0 0 0"></a-video></a-entity>
+      <a-entity mindar-image-target="targetIndex: 2"><a-video src="#video2" width="1" height="1.777" position="0 0 0"></a-video></a-entity>
+      <a-entity mindar-image-target="targetIndex: 3"><a-video src="#video3" width="1" height="1.777" position="0 0 0"></a-video></a-entity>
+      <a-entity mindar-image-target="targetIndex: 4"><a-video src="#video4" width="1" height="0.5625" position="0 0 0"></a-video></a-entity>
       
     </a-scene>
 
     <script>
       const startOverlay = document.querySelector('#start-overlay');
       const startButton = document.querySelector('#start-button');
+      const debugBoard = document.querySelector('#debug-board');
 
       startButton.addEventListener('click', () => {
         startOverlay.style.display = 'none';
-
-        // 解鎖 5 個影片嘅播放 (不論聲音有無)
         for (let i = 0; i <= 4; i++) {
           const v = document.querySelector(`#video${i}`);
-          if (v) { v.play().then(() => { v.pause(); }).catch((err) => { console.log(err); }); }
+          if (v) { v.play().then(() => { v.pause(); }).catch(e => console.log(e)); }
         }
       });
 
-      // 嚴格嘅 1 對 1 順序控制
       for (let i = 0; i <= 4; i++) {
-        setupTarget(i, document.querySelector(`#video${i}`));
-      }
-
-      function setupTarget(index, videoEl) {
-        // 使用更精準嘅 A-Frame 監聽選擇器
-        const targetEl = document.querySelectorAll('[mindar-image-target]')[index];
-        if (!targetEl || !videoEl) return;
-
-        targetEl.addEventListener("targetFound", () => {
-          videoEl.currentTime = 0;
-          videoEl.play().catch(e => console.log(e));
-        });
-
-        targetEl.addEventListener("targetLost", () => {
-          videoEl.pause();
-        });
+        const targetEl = document.querySelectorAll('[mindar-image-target]')[i];
+        const videoEl = document.querySelector(`#video${i}`);
+        if (targetEl && videoEl) {
+          targetEl.addEventListener("targetFound", () => {
+            // 彈出紅色大字，話畀你知系統當呢張相係 Index 幾多！
+            debugBoard.style.display = 'block';
+            debugBoard.innerText = `🚨 系統當呢張相係：Index ${i} 🚨`;
+            
+            videoEl.currentTime = 0;
+            videoEl.play().catch(e => console.log(e));
+          });
+          targetEl.addEventListener("targetLost", () => {
+            debugBoard.style.display = 'none';
+            videoEl.pause();
+          });
+        }
       }
     </script>
   </body>
