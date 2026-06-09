@@ -51,6 +51,12 @@
         <a-entity mindar-image-target="targetIndex: 2"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
         <a-entity mindar-image-target="targetIndex: 3"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
         <a-entity mindar-image-target="targetIndex: 4"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 5"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 6"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 7"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 8"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 9"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
+        <a-entity mindar-image-target="targetIndex: 10"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
     </a-scene>
 
     <script>
@@ -59,6 +65,9 @@
         const video = document.querySelector('#main-video');
         const planes = document.querySelectorAll('.ar-plane');
 
+        // 指定邊幾個影片係「不要聲」 (圖0, 1, 6, 7)
+        const mutedIndexes = [0, 1, 6, 7];
+
         startButton.addEventListener('click', () => {
             startOverlay.style.display = 'none';
         });
@@ -66,11 +75,15 @@
         document.querySelectorAll('[mindar-image-target]').forEach((target, index) => {
             target.addEventListener('targetFound', () => {
                 video.pause();
-                // 呢度係關鍵：將 material 直接綁定上去
+                
                 planes[index].setAttribute('material', 'src: #main-video; shader: flat; transparent: true');
                 video.src = `./video${index}.mp4`; 
-                video.muted = (index < 2);
-                video.load(); video.play();
+                
+                // 自動判斷呢個 index 需唔需要靜音
+                video.muted = mutedIndexes.includes(index);
+                
+                video.load(); 
+                video.play();
             });
             target.addEventListener('targetLost', () => { 
                 video.pause(); 
