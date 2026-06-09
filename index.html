@@ -10,37 +10,44 @@
         
         #start-overlay {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            /* 強制橫圖填滿 */
             background-image: url('./bg.jpg');
             background-size: cover;
-            background-position: center center;
+            background-position: center;
             background-repeat: no-repeat;
             color: white;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            /* 將內容推到上面 */
+            justify-content: flex-start; 
+            padding-top: 15%; 
             z-index: 9999; font-family: sans-serif;
         }
-        
+
         #start-overlay::before {
             content: "";
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.3);
             z-index: -1;
         }
 
         #start-button {
-            padding: 18px 45px; font-size: 20px; background-color: #f1c40f;
-            color: #2c3e50; border: none; border-radius: 50px; cursor: pointer; 
+            padding: 18px 45px; font-size: 20px; 
+            background-color: #f1c40f; color: #2c3e50; 
+            border: none; border-radius: 50px; cursor: pointer; 
             font-weight: bold; box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            margin-top: 20px;
         }
+        
         .title-text {
-            margin-bottom: 40px; font-size: 28px; font-weight: bold; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3); text-align: center;
+            font-size: 28px; font-weight: bold; 
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-align: center;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
-
-    <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a115c5.mp3"></audio>
 
     <div id="start-overlay">
         <div class="title-text">Hyson 的成長時刻<br>AR 互動展覽館</div>
@@ -64,19 +71,17 @@
         const startButton = document.querySelector('#start-button');
         const startOverlay = document.querySelector('#start-overlay');
         const video = document.querySelector('#main-video');
-        const music = document.querySelector('#bg-music');
         const planes = document.querySelectorAll('.ar-plane');
 
         startButton.addEventListener('click', () => {
             startOverlay.style.display = 'none';
-            music.play(); // 撳掣即播音樂
             video.play().then(() => video.pause()).catch(e => console.log(e));
         });
 
         document.querySelectorAll('[mindar-image-target]').forEach((target, index) => {
             target.addEventListener('targetFound', () => {
                 video.src = `./video${index}.mp4`; 
-                video.muted = (index < 2); // 0, 1 無聲
+                video.muted = (index < 2);
                 video.load(); video.play();
                 planes.forEach((p, i) => p.setAttribute('visible', i === index));
             });
