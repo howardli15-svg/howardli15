@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hyson 的 AR 展覽館</title>
+    <title>希晨 的 AR 展覽館</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <style>
@@ -36,16 +36,31 @@
 <body>
 
     <div id="start-overlay">
-        <div class="title-text">Hyson 的成長時刻<br>AR 互動展覽館</div>
+        <div class="title-text">希晨 的成長時刻<br>AR 互動展覽館</div>
         <button id="start-button">進入體驗</button>
     </div>
 
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind;" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+    <!-- 關鍵修改：加咗 maxTrack: 2 容許同時追蹤多個目標 -->
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 2;" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+        
+        <!-- 關鍵修改：11條片都有自己單獨嘅影片標籤，唔會再互相搶資源 -->
         <a-assets>
-            <video id="main-video" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video0" src="./video0.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video1" src="./video1.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video2" src="./video2.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video3" src="./video3.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video4" src="./video4.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video5" src="./video5.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video6" src="./video6.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video7" src="./video7.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video8" src="./video8.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video9" src="./video9.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
+            <video id="video10" src="./video10.mp4" preload="auto" loop="true" playsinline webkit-playsinline crossorigin="anonymous"></video>
         </a-assets>
+
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
         
+        <!-- 11 個相片目標對應各自的畫面 -->
         <a-entity mindar-image-target="targetIndex: 0"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
         <a-entity mindar-image-target="targetIndex: 1"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 0.5625" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
         <a-entity mindar-image-target="targetIndex: 2"><a-entity class="ar-plane" geometry="primitive: plane; width: 1; height: 1.777" scale="1.05 1.05 1" position="0 0 0"></a-entity></a-entity>
@@ -62,31 +77,32 @@
     <script>
         const startButton = document.querySelector('#start-button');
         const startOverlay = document.querySelector('#start-overlay');
-        const video = document.querySelector('#main-video');
         const planes = document.querySelectorAll('.ar-plane');
 
-        // 指定邊幾個影片係「不要聲」 (圖0, 1, 6, 7)
+        // 哪些影片需要靜音（圖 0, 1, 6, 7）
         const mutedIndexes = [0, 1, 6, 7];
 
         startButton.addEventListener('click', () => {
             startOverlay.style.display = 'none';
+            // 經由使用者點擊，預先加載所有影片解鎖播放權限
+            for (let i = 0; i <= 10; i++) {
+                const v = document.querySelector(`#video${i}`);
+                v.muted = mutedIndexes.includes(i);
+                v.play().then(() => { v.pause(); }).catch(() => {});
+            }
         });
 
         document.querySelectorAll('[mindar-image-target]').forEach((target, index) => {
+            const currentVideo = document.querySelector(`#video${index}`);
+
             target.addEventListener('targetFound', () => {
-                video.pause();
-                
-                planes[index].setAttribute('material', 'src: #main-video; shader: flat; transparent: true');
-                video.src = `./video${index}.mp4`; 
-                
-                // 自動判斷呢個 index 需唔需要靜音
-                video.muted = mutedIndexes.includes(index);
-                
-                video.load(); 
-                video.play();
+                // 直接將該目標對應的獨立影片綁上平面
+                planes[index].setAttribute('material', `src: #video${index}; shader: flat; transparent: true`);
+                currentVideo.play();
             });
+            
             target.addEventListener('targetLost', () => { 
-                video.pause(); 
+                currentVideo.pause(); 
                 planes[index].removeAttribute('material');
             });
         });
